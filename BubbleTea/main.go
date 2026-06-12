@@ -69,6 +69,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		m.updateStyles(msg.IsDark())
 		return m, nil
+	// ─── マウススクロールのハンドリングを追加 ───
+    case tea.MouseWheelMsg:
+		mouse := msg.Mouse()
+        switch mouse.Button {
+        case tea.MouseWheelUp: // 上スクロールで前のページへ
+            m.paginator.PrevPage()
+            return m, nil
+        case tea.MouseWheelDown: // 下スクロールで次のページへ
+            m.paginator.NextPage()
+            return m, nil
+        }
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
@@ -114,7 +125,9 @@ func (m model) View() tea.View {
 	}
 	b.WriteString("  " + m.paginator.View())
 	b.WriteString("\n\n  h/l ←/→ page • q: quit\n")
-	return tea.NewView(b.String())
+	view := tea.NewView(b.String())
+	view.MouseMode = tea.MouseModeCellMotion
+	return view
 }
 
 func main() {
