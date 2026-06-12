@@ -41,7 +41,7 @@ func newModel() model {
 
 	p := paginator.New()
 	p.Type = paginator.Dots
-	p.PerPage = 10
+	p.PerPage = 7
 	p.SetTotalPages(len(items))
 
 	m := model{
@@ -73,7 +73,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
 			return m, tea.Quit
-		}
+			// ─── カスタムキーバインドの追加 ───
+        case "n": // 'n' キーで次のページへ
+            m.paginator.NextPage()
+            return m, nil
+        case "p": // 'p' キーで前のページへ
+            m.paginator.PrevPage()
+            return m, nil
+			//─── 5ページ進む (Shift + j) ───
+   		case "J":
+        	targetPage := m.paginator.Page + 5
+        	// 総ページ数を超えないように丸める
+        	if targetPage >= m.paginator.TotalPages {
+         	   targetPage = m.paginator.TotalPages - 1
+    		}
+        	m.paginator.Page = targetPage
+        	return m, nil
+
+   			// ─── 5ページ戻る (Shift + k) ───
+    	case "K":
+			targetPage := m.paginator.Page - 5
+       		// 0ページ未満にならないように丸める
+        	if targetPage < 0 {
+       	    	targetPage = 0
+        	}
+        	m.paginator.Page = targetPage
+        	return m, nil
+    	}
 	}
 	m.paginator, cmd = m.paginator.Update(msg)
 	return m, cmd
